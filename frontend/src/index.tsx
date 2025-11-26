@@ -33,15 +33,15 @@ configure({
 // Get supported endpoints / kafka cluster version
 // In the business version, that endpoint (like any other api endpoint) is
 // protected, so we need to delay the call until the user is logged in.
-if (!IsBusiness) {
-    api.refreshSupportedEndpoints(true);
-} else {
-    when(() => Boolean(api.userData), () => {
-        setImmediate(() => {
-            api.refreshSupportedEndpoints(true);
-        });
-    });
-}
+// if (!IsBusiness) {
+//     api.refreshSupportedEndpoints(true);
+// } else {
+//     when(() => Boolean(api.userData), () => {
+//         setImmediate(() => {
+//             api.refreshSupportedEndpoints(true);
+//         });
+//     });
+// }
 
 ReactDOM.render(
     <BrowserRouter basename={basePathS}>

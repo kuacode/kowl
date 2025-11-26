@@ -21,4 +21,10 @@ module.exports = override(
     //     javascriptEnabled: true,
     //     modifyVars: darkTheme.default
     // }),
+
+    // Force non-minified React in development
+    (config) => {
+        process.env.NODE_ENV = 'development'
+        return config;
+    }
 );

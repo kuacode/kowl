@@ -2,6 +2,7 @@ package owl
 
 import (
 	"fmt"
+
 	"github.com/cloudhut/kowl/backend/pkg/git"
 	"github.com/cloudhut/kowl/backend/pkg/kafka"
 	"go.uber.org/zap"
@@ -40,4 +41,8 @@ func (s *Service) Start() error {
 		return nil
 	}
 	return s.gitSvc.Start()
+}
+
+func (s *Service) UpdateKafkaService(kafkaSvc *kafka.Service) {
+	s.kafkaSvc = kafkaSvc
 }

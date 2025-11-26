@@ -3,6 +3,7 @@ package owl
 import (
 	"context"
 	"fmt"
+
 	"github.com/twmb/franz-go/pkg/kmsg"
 	"github.com/twmb/franz-go/pkg/kversion"
 )
@@ -23,6 +24,9 @@ type EndpointCompatibilityEndpoint struct {
 // Kowl endpoint we can let the frontend know in advance, so that these features will be rendered as
 // disabled.
 func (s *Service) GetEndpointCompatibility(ctx context.Context) (EndpointCompatibility, error) {
+	if s.kafkaSvc == nil {
+		return EndpointCompatibility{}, fmt.Errorf("kafka service is not configured")
+	}
 	versionsRes, err := s.kafkaSvc.GetAPIVersions(ctx)
 	if err != nil {
 		return EndpointCompatibility{}, fmt.Errorf("failed to get kafka api version: %w", err)

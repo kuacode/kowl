@@ -3,17 +3,14 @@ package api
 import (
 	"flag"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/cloudhut/common/flagext"
 	"github.com/cloudhut/kowl/backend/pkg/connect"
 	"github.com/cloudhut/kowl/backend/pkg/owl"
 	"github.com/knadh/koanf"
-	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/providers/env"
-	"github.com/knadh/koanf/providers/file"
 	"github.com/mitchellh/mapstructure"
 	"go.uber.org/zap"
 
@@ -53,20 +50,20 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("failed to validate loglevel input: %w", err)
 	}
 
-	err = c.Kafka.Validate()
-	if err != nil {
-		return fmt.Errorf("failed to validate Kafka config: %w", err)
-	}
+	// err = c.Kafka.Validate()
+	// if err != nil {
+	// 	return fmt.Errorf("failed to validate Kafka config: %w", err)
+	// }
 
-	err = c.Owl.Validate()
-	if err != nil {
-		return fmt.Errorf("failed to validate Owl config: %w", err)
-	}
+	// err = c.Owl.Validate()
+	// if err != nil {
+	// 	return fmt.Errorf("failed to validate Owl config: %w", err)
+	// }
 
-	err = c.Connect.Validate()
-	if err != nil {
-		return fmt.Errorf("failed to validate Connect config: %w", err)
-	}
+	// err = c.Connect.Validate()
+	// if err != nil {
+	// 	return fmt.Errorf("failed to validate Connect config: %w", err)
+	// }
 
 	return nil
 }
@@ -95,21 +92,52 @@ func LoadConfig(logger *zap.Logger) (Config, error) {
 	flag.Parse()
 
 	// 1. Check if a config filepath is set via flags. If there is one we'll try to load the file using a YAML Parser
-	var configFilepath string
-	if cfg.ConfigFilepath != "" {
-		configFilepath = cfg.ConfigFilepath
-	} else {
-		envKey := "CONFIG_FILEPATH"
-		configFilepath = os.Getenv(envKey)
-	}
-	if configFilepath == "" {
-		logger.Info("config filepath is not set, proceeding with options set from env variables and flags")
-	} else {
-		err := k.Load(file.Provider(configFilepath), yaml.Parser())
-		if err != nil {
-			return Config{}, fmt.Errorf("failed to parse YAML config: %w", err)
-		}
-	}
+	// var configFilepath string
+	// if cfg.ConfigFilepath != "" {
+	// 	configFilepath = cfg.ConfigFilepath
+	// } else {
+	// 	envKey := "CONFIG_FILEPATH"
+	// 	configFilepath = os.Getenv(envKey)
+	// }
+	// if configFilepath == "" {
+	// 	logger.Info("config filepath is not set, proceeding with options set from env variables and flags")
+	// } else {
+	// 	err := k.Load(file.Provider(configFilepath), yaml.Parser())
+	// 	if err != nil {
+	// 		return Config{}, fmt.Errorf("failed to parse YAML config: %w", err)
+	// 	}
+	// }
+
+	cm := make(map[string]interface{})
+	cm["server.listenPort"] = 9090
+
+	// data, err := os.ReadFile(clusterDataFile)
+	// if err != nil {
+	// 	return Config{}, err
+	// }
+	// var clusters clusterList
+	// json.Unmarshal(data, &clusters)
+	// if len(clusters.Data) == 0 {
+	// 	return Config{}, fmt.Errorf("cluster list is empty")
+	// }
+	// if clusters.Selected == "" {
+	// 	cm["kafka.brokers"] = clusters.Data[0].Brokers
+	// 	cm["kafka.id"] = clusters.Data[0].Id
+	// } else {
+	// 	found := false
+	// 	for _, c := range clusters.Data {
+	// 		if c.Id == clusters.Selected {
+	// 			cm["kafka.id"] = c.Id
+	// 			cm["kafka.brokers"] = c.Brokers
+	// 			found = true
+	// 			break
+	// 		}
+	// 	}
+	// 	if !found {
+	// 		return Config{}, fmt.Errorf("could not find selected cluster in cluster list")
+	// 	}
+	// }
+	k.Load(confmap.Provider(cm, "."), nil)
 
 	// 2. Unmarshal the config into our Config struct using the YAML and then ENV parser
 	// We could unmarshal the loaded koanf input after loading both providers, however we want to unmarshal the YAML

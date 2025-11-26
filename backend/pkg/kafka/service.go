@@ -34,11 +34,12 @@ type Service struct {
 // dependencies fail an error wil be returned.
 func NewService(cfg Config, logger *zap.Logger, metricsNamespace string) (*Service, error) {
 	// Kafka client
-	hooksChildLogger := logger.With(zap.String("source", "kafka_client_hooks"))
-	clientHooks := newClientHooks(hooksChildLogger, "kowl")
+	// hooksChildLogger := logger.With(zap.String("source", "kafka_client_hooks"))
+	// clientHooks := newClientHooks(hooksChildLogger, "kowl")
 
 	logger.Debug("creating new kafka client", zap.Any("config", cfg.RedactedConfig()))
-	kgoOpts, err := NewKgoConfig(&cfg, logger, clientHooks)
+	// kgoOpts, err := NewKgoConfig(&cfg, logger, clientHooks)
+	kgoOpts, err := NewKgoConfig(&cfg, logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a valid kafka client config: %w", err)
 	}
@@ -51,10 +52,10 @@ func NewService(cfg Config, logger *zap.Logger, metricsNamespace string) (*Servi
 	// Ensure Kafka connection works, otherwise fail fast. Allow up to 5 retries with exponentially increasing backoff.
 	// Retries with backoff is very helpful in environments where Kowl concurrently starts with the Kafka target, such
 	// as a docker-compose demo.
-	retries := 5
+	retries := 1
 	backoffDuration := 1 * time.Second
 	for retries > 0 {
-		err = testConnection(logger, kafkaClient, time.Second*15)
+		err = testConnection(logger, kafkaClient, time.Second*10)
 		if err == nil {
 			break
 		}
@@ -104,12 +105,12 @@ func NewService(cfg Config, logger *zap.Logger, metricsNamespace string) (*Servi
 	}
 
 	return &Service{
-		Config:           cfg,
-		Logger:           logger,
-		KafkaClientHooks: clientHooks,
-		KafkaClient:      kafkaClient,
-		SchemaService:    schemaSvc,
-		ProtoService:     protoSvc,
+		Config: cfg,
+		Logger: logger,
+		// KafkaClientHooks: clientHooks,
+		KafkaClient:   kafkaClient,
+		SchemaService: schemaSvc,
+		ProtoService:  protoSvc,
 		Deserializer: deserializer{
 			SchemaService:  schemaSvc,
 			ProtoService:   protoSvc,
@@ -129,7 +130,8 @@ func (s *Service) Start() error {
 }
 
 func (s *Service) NewKgoClient(additionalOpts ...kgo.Opt) (*kgo.Client, error) {
-	kgoOpts, err := NewKgoConfig(&s.Config, s.Logger, s.KafkaClientHooks)
+	// kgoOpts, err := NewKgoConfig(&s.Config, s.Logger, s.KafkaClientHooks)
+	kgoOpts, err := NewKgoConfig(&s.Config, s.Logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a valid kafka client config: %w", err)
 	}

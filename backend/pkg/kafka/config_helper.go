@@ -26,7 +26,8 @@ import (
 
 // NewKgoConfig creates a new Config for the Kafka Client as exposed by the franz-go library.
 // If TLS certificates can't be read an error will be returned.
-func NewKgoConfig(cfg *Config, logger *zap.Logger, hooks kgo.Hook) ([]kgo.Opt, error) {
+// func NewKgoConfig(cfg *Config, logger *zap.Logger, hooks kgo.Hook) ([]kgo.Opt, error) {
+func NewKgoConfig(cfg *Config, logger *zap.Logger) ([]kgo.Opt, error) {
 	opts := []kgo.Opt{
 		kgo.SeedBrokers(cfg.Brokers...),
 		kgo.MaxVersions(kversion.V2_6_0()),
@@ -45,7 +46,7 @@ func NewKgoConfig(cfg *Config, logger *zap.Logger, hooks kgo.Hook) ([]kgo.Opt, e
 	opts = append(opts, kgo.WithLogger(kgoLogger))
 
 	// Attach hooks
-	opts = append(opts, kgo.WithHooks(hooks))
+	// opts = append(opts, kgo.WithHooks(hooks))
 
 	// Add Rack Awareness if configured
 	if cfg.RackID != "" {

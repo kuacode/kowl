@@ -23,6 +23,9 @@ type API struct {
 	Hooks *Hooks // Hooks to add additional functionality from the outside at different places (used by Kafka Owl Business)
 
 	version versionInfo
+
+	// kafka services
+	kafkaServiceMap map[string]*kafka.Service
 }
 
 // New creates a new API instance
@@ -48,12 +51,13 @@ func New(cfg *Config) *API {
 		)
 	}
 
-	kafkaSvc, err := kafka.NewService(cfg.Kafka, logger, cfg.MetricsNamespace)
-	if err != nil {
-		logger.Fatal("failed to create kafka service", zap.Error(err))
-	}
+	// kafkaSvc, err := kafka.NewService(cfg.Kafka, logger, cfg.MetricsNamespace)
+	// if err != nil {
+	// 	logger.Fatal("failed to create kafka service", zap.Error(err))
+	// }
 
-	owlSvc, err := owl.NewService(cfg.Owl, logger, kafkaSvc)
+	// owlSvc, err := owl.NewService(cfg.Owl, logger, kafkaSvc)
+	owlSvc, err := owl.NewService(cfg.Owl, logger, nil)
 	if err != nil {
 		logger.Fatal("failed to create owl service", zap.Error(err))
 	}
@@ -64,24 +68,25 @@ func New(cfg *Config) *API {
 	}
 
 	return &API{
-		Cfg:        cfg,
-		Logger:     logger,
-		KafkaSvc:   kafkaSvc,
-		OwlSvc:     owlSvc,
-		ConnectSvc: connectSvc,
-		Hooks:      newDefaultHooks(),
-		version:    version,
+		Cfg:    cfg,
+		Logger: logger,
+		// KafkaSvc:   kafkaSvc,
+		OwlSvc:          owlSvc,
+		ConnectSvc:      connectSvc,
+		Hooks:           newDefaultHooks(),
+		version:         version,
+		kafkaServiceMap: make(map[string]*kafka.Service),
 	}
 }
 
 // Start the API server and block
 func (api *API) Start() {
-	err := api.KafkaSvc.Start()
-	if err != nil {
-		api.Logger.Fatal("failed to start kafka service", zap.Error(err))
-	}
+	// err := api.KafkaSvc.Start()
+	// if err != nil {
+	// 	api.Logger.Fatal("failed to start kafka service", zap.Error(err))
+	// }
 
-	err = api.OwlSvc.Start()
+	err := api.OwlSvc.Start()
 	if err != nil {
 		api.Logger.Fatal("failed to start owl service", zap.Error(err))
 	}

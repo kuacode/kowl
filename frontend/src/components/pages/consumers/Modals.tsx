@@ -625,18 +625,20 @@ export class DeleteOffsetsModal extends Component<{
 
 
         return <Modal
-            title={mode == 'group'
-                ? "Delete consumer group"
-                : "Delete consumer group offsets"
-            }
+            title={mode == 'group' ? "Delete consumer group" : "Delete consumer group offsets"}
             visible={visible}
             closeIcon={<></>} maskClosable={false}
             width="600px"
 
             okText="Delete"
             okButtonProps={{ danger: true }}
-            onOk={() => this.onDeleteOffsets()}
-
+            onOk={() => {
+                if (mode == 'group') {
+                    this.onDeleteGroup()
+                } else {
+                    this.onDeleteOffsets()
+                }
+            }}
             onCancel={() => this.props.onClose()}
         >
             <div style={{ display: 'flex', flexDirection: 'row', gap: '1.8em' }}>
@@ -738,6 +740,33 @@ export class DeleteOffsetsModal extends Component<{
             else {
                 this.props.onClose();
             }
+        }
+    }
+
+    @action async onDeleteGroup() {
+        const group = this.props.group;
+        const msg = new Message('Deleting Group', 'loading', '...');
+        try {
+            await api.deleteConsumerGroup(group.groupId);
+            msg.setSuccess(undefined, ' - done');
+            // Group is fully deleted, go back to list
+            appGlobal.history.replace('/groups');
+        }
+        catch (err) {
+            console.error(err);
+            msg.setError(undefined, ' - failed');
+            showErrorModal(
+                'Delete offsets',
+                <span>
+                    Could not delete selected offsets
+                    in consumer group <span className='codeBox'>{group.groupId}</span>.
+                </span>,
+                toJson(err, 4)
+            );
+        }
+        finally {
+            api.refreshConsumerGroups(true);
+            this.props.onClose();
         }
     }
 

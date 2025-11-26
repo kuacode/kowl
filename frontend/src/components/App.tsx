@@ -1,11 +1,10 @@
-import React, { Component, ReactNode } from 'react';
+import { Component, ReactNode } from 'react';
 import { observer } from "mobx-react";
-import { Layout, Menu, PageHeader, Button, Tooltip, Popover, Dropdown } from 'antd';
+import { Layout, PageHeader, Button, Popover } from 'antd';
 import { uiSettings } from '../state/ui';
-import { CreateRouteMenuItems, RouteView, RouteMenu, } from './routes';
-import { RenderTrap, DebugDisplay, UpdatePopup } from './misc/common';
-import { DebugTimerStore, prettyMilliseconds } from '../utils/utils';
-import { toJson } from "../utils/jsonUtils";
+import { RouteView, RouteMenu, } from './routes';
+import { RenderTrap, UpdatePopup } from './misc/common';
+import { prettyMilliseconds } from '../utils/utils';
 import { api, REST_CACHE_DURATION_SEC } from '../state/backendApi';
 import { NavLink, Switch, Route } from 'react-router-dom';
 import { Route as AntBreadcrumbRoute } from 'antd/lib/breadcrumb/Breadcrumb';
@@ -23,9 +22,8 @@ import { UserData } from '../state/restInterfaces';
 import Login from './misc/login';
 import LoginCompletePage from './misc/login-complete';
 import env, { getBuildDate } from '../utils/env';
-import { MenuFoldOutlined, MenuUnfoldOutlined, ReloadOutlined, GithubFilled, UserOutlined, TwitterOutlined, LinkedinFilled } from '@ant-design/icons';
-import { makeObservable, observable } from 'mobx';
-import { LayoutBypass, RadioOptionGroup, toSafeString } from '../utils/tsxUtils';
+import { MenuFoldOutlined, MenuUnfoldOutlined, GithubFilled, TwitterOutlined, LinkedinFilled } from '@ant-design/icons';
+import { LayoutBypass } from '../utils/tsxUtils';
 import { UserPreferencesButton } from './misc/UserPreferences';
 import { featureErrors } from '../state/supportedFeatures';
 import { renderErrorModals } from './misc/ErrorModal';
@@ -259,6 +257,7 @@ const AppFooter = () => {
 
     return <Footer className="footer">
         {/* Social Media Links */}
+        {/* 
         <div className="links">
             <a href="https://github.com/cloudhut/kowl" title="Visit Kowl's GitHub repository" target='_blank' rel='noopener'>
                 <GithubFilled />
@@ -275,11 +274,14 @@ const AppFooter = () => {
                 <LinkedinFilled />
             </a>
         </div>
+        */}
 
         {/* Version Info */}
+        {/* 
         <div className='versionText'>
             <VersionInfo />
         </div>
+        */}
     </Footer>;
 };
 

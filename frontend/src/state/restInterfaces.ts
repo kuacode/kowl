@@ -324,7 +324,12 @@ export interface EditConsumerGroupOffsetsResponseTopic {
 }
 
 
-
+export interface DeleteConsumerGroup {
+    groupId: string;
+}
+export interface DeleteConsumerGroupResponse {
+    groupId: string[];
+}
 
 export interface DeleteConsumerGroupOffsetsRequest {
     groupId: string;
@@ -407,7 +412,17 @@ export interface GetConsumerGroupResponse {
     consumerGroup: GroupDescription;
 }
 
-
+export interface ClusterListResponse {
+    selected: string
+    data: ClusterItem[]
+}
+// ADD: Cluster List
+export interface ClusterItem {
+    id: number;
+    name: string;
+    brokers: Broker[];
+    selected: boolean;
+}
 
 export interface ClusterInfoResponse {
     clusterInfo: ClusterInfo;

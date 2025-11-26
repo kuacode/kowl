@@ -2,11 +2,12 @@ package api
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/go-chi/chi"
 	"github.com/twmb/franz-go/pkg/kmsg"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"net/http"
 
 	"github.com/cloudhut/common/rest"
 	"github.com/cloudhut/kowl/backend/pkg/owl"
@@ -265,6 +266,56 @@ func (api *API) handleDeleteConsumerGroupOffsets() http.HandlerFunc {
 		}
 
 		res := response{Topics: deletedTopics}
+		rest.SendResponse(w, r, api.Logger, http.StatusOK, res)
+	}
+}
+
+func (api *API) handleDeleteConsumerGroup() http.HandlerFunc {
+	type response struct {
+		GroupID string `json:"groupId"`
+	}
+	type deleteGroupRequest struct {
+		GroupID string `json:"groupId"`
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		// 1. Parse and validate request
+		var req deleteGroupRequest
+		restErr := rest.Decode(w, r, &req)
+		if restErr != nil {
+			rest.SendRESTError(w, r, api.Logger, restErr)
+			return
+		}
+
+		// 2. Check if logged in user is allowed to delete Consumer Group (always true for Kowl, but not for Kowl Business)
+		canDelete, restErr := api.Hooks.Owl.CanDeleteConsumerGroup(r.Context(), req.GroupID)
+		if restErr != nil {
+			rest.SendRESTError(w, r, api.Logger, restErr)
+			return
+		}
+		if !canDelete {
+			rest.SendRESTError(w, r, api.Logger, &rest.Error{
+				Err:          fmt.Errorf("requester has no permissions to edit consumer group"),
+				Status:       http.StatusForbidden,
+				Message:      "You don't have permissions to edit this consumer group",
+				InternalLogs: []zapcore.Field{zap.String("group_id", req.GroupID)},
+				IsSilent:     false,
+			})
+			return
+		}
+
+		// 4. Check response and pass it to the frontend
+		group, err := api.OwlSvc.DeleteConsumerGroup(r.Context(), req.GroupID)
+		if err != nil {
+			restErr := &rest.Error{
+				Err:      err,
+				Status:   http.StatusServiceUnavailable,
+				Message:  fmt.Sprintf("Delete consumer group offset request has failed: %v", err.Error()),
+				IsSilent: false,
+			}
+			rest.SendRESTError(w, r, api.Logger, restErr)
+			return
+		}
+		res := response{GroupID: group}
 		rest.SendResponse(w, r, api.Logger, http.StatusOK, res)
 	}
 }

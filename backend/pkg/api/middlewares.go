@@ -159,3 +159,16 @@ func createSetVersionInfoHeader(version versionInfo) func(next http.Handler) htt
 
 	return m
 }
+
+func checkClusterSelected() func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/api/cluster-list" && r.URL.Path != "/api/cluster-change" && strings.HasPrefix(r.URL.Path, "/api/") && curretCluster == "" {
+				w.WriteHeader(http.StatusNotFound)
+				w.Write([]byte("No cluster selected"))
+				return
+			}
+			h.ServeHTTP(w, r)
+		})
+	}
+}

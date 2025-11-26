@@ -188,9 +188,9 @@ class GroupDetails extends PageComponent<{ groupId: string }> {
             });
         });
 
-        if (!groupOffsets) return;
+        // if (!groupOffsets) return;
 
-        this.deletingOffsets = groupOffsets;
+        this.deletingOffsets = groupOffsets || [];
         this.deletingMode = 'group';
     }
 }

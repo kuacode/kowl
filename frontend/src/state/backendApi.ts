@@ -9,9 +9,32 @@ import { LazyMap } from "../utils/LazyMap";
 import { ObjToKv } from "../utils/tsxUtils";
 import { decodeBase64, TimeSince } from "../utils/utils";
 import { appGlobal } from "./appGlobal";
-import { AclRequest, AclRequestDefault, AclResourceType, AclResponse, AdminInfo, AlterConfigOperation, AlterPartitionReassignmentsResponse, ApiError, Broker, BrokerConfigResponse, ClusterAdditionalInfo, ClusterConnectors, ClusterInfo, ClusterInfoResponse, ConfigEntry, ConfigResourceType, ConnectorValidationResult, DeleteConsumerGroupOffsetsRequest, DeleteConsumerGroupOffsetsResponse, DeleteConsumerGroupOffsetsResponseTopic, DeleteConsumerGroupOffsetsTopic, DeleteRecordsResponseData, EditConsumerGroupOffsetsRequest, EditConsumerGroupOffsetsResponse, EditConsumerGroupOffsetsResponseTopic, EditConsumerGroupOffsetsTopic, EndpointCompatibility, EndpointCompatibilityResponse, GetAllPartitionsResponse, GetConsumerGroupResponse, GetConsumerGroupsResponse, GetPartitionsResponse, GetTopicConsumersResponse, GetTopicOffsetsByTimestampResponse, GetTopicsResponse, GroupDescription, isApiError, KafkaConnectors, PartialTopicConfigsResponse, Partition, PartitionReassignmentRequest, PartitionReassignments, PartitionReassignmentsResponse, PatchConfigsRequest, PatchConfigsResponse, ProduceRecordsResponse, PublishRecordsRequest, QuotaResponse, ResourceConfig, SchemaDetails, SchemaDetailsResponse, SchemaOverview, SchemaOverviewResponse, SchemaType, Topic, TopicConfigResponse, TopicConsumer, TopicDescription, TopicDocumentation, TopicDocumentationResponse, TopicMessage, TopicOffset, TopicPermissions, UserData, WrappedError } from "./restInterfaces";
+import {
+    AclRequest, AclRequestDefault, AclResourceType,
+    AclResponse, AdminInfo, AlterConfigOperation,
+    AlterPartitionReassignmentsResponse, ApiError, Broker,
+    BrokerConfigResponse,
+    ClusterAdditionalInfo,
+    ClusterConnectors,
+    ClusterInfo, ClusterInfoResponse,
+    ClusterItem, ClusterListResponse, ConfigEntry, ConfigResourceType,
+    ConnectorValidationResult, DeleteConsumerGroup, DeleteConsumerGroupOffsetsRequest,
+    DeleteConsumerGroupOffsetsResponse, DeleteConsumerGroupOffsetsResponseTopic,
+    DeleteConsumerGroupOffsetsTopic, DeleteConsumerGroupResponse, DeleteRecordsResponseData,
+    EditConsumerGroupOffsetsRequest, EditConsumerGroupOffsetsResponse,
+    EditConsumerGroupOffsetsResponseTopic, EditConsumerGroupOffsetsTopic, EndpointCompatibility,
+    EndpointCompatibilityResponse, GetAllPartitionsResponse, GetConsumerGroupResponse,
+    GetConsumerGroupsResponse, GetPartitionsResponse, GetTopicConsumersResponse,
+    GetTopicOffsetsByTimestampResponse, GetTopicsResponse, GroupDescription, isApiError,
+    KafkaConnectors, PartialTopicConfigsResponse, Partition, PartitionReassignmentRequest,
+    PartitionReassignments, PartitionReassignmentsResponse, PatchConfigsRequest, PatchConfigsResponse,
+    ProduceRecordsResponse, PublishRecordsRequest, QuotaResponse, ResourceConfig, SchemaDetails, SchemaDetailsResponse,
+    SchemaOverview, SchemaOverviewResponse, SchemaType, Topic, TopicConfigResponse, TopicConsumer, TopicDescription,
+    TopicDocumentation, TopicDocumentationResponse, TopicMessage, TopicOffset, TopicPermissions, UserData, WrappedError
+} from "./restInterfaces";
 import { Features } from "./supportedFeatures";
 import { ServerVersionInfo, uiState } from "./uiState";
+import { configure, when } from "mobx";
 
 const REST_TIMEOUT_SEC = 25;
 export const REST_CACHE_DURATION_SEC = 20;
@@ -166,6 +189,7 @@ const apiStore = {
 
     clusters: ['A', 'B', 'C'],
     clusterInfo: null as (ClusterInfo | null),
+    clusterData: null as (ClusterListResponse[] | null),
 
     brokerConfigs: new Map<number, ConfigEntry[] | string>(), // config entries, or error string
 
@@ -617,6 +641,34 @@ const apiStore = {
             .then(v => this.endpointCompatibility = v.endpointCompatibility, addError);
     },
 
+
+    setCurrentCluster(id: string, force: boolean = false) {
+        cachedApiRequest<ClusterListResponse[] | ApiError>(`./api/cluster-change?id=${id}`, force)
+            .then(v => {
+                // do nothing
+                cache.clear()
+                // if (!IsBusiness) {
+                //     api.refreshSupportedEndpoints(true);
+                // } else {
+                //     when(() => Boolean(api.userData), () => {
+                //         setImmediate(() => {
+                //             api.refreshSupportedEndpoints(true);
+                //         });
+                //     });
+                // }
+            }, addError);
+    },
+    // refresh cluster list
+    refreshClusterList(force?: boolean) {
+        cachedApiRequest<ClusterListResponse[] | ApiError>(`./api/cluster-list`, force)
+            .then(v => {
+                if ('message' in v) {
+                    return;
+                }
+                this.clusterData = v;
+            }, addError);
+    },
+
     refreshCluster(force?: boolean) {
         cachedApiRequest<ClusterInfoResponse | ApiError>(`./api/cluster`, force)
             .then(v => {
@@ -722,6 +774,23 @@ const apiStore = {
 
         const r = await tryParseOrUnwrapError<DeleteConsumerGroupOffsetsResponse>(response);
         return r.topics;
+    },
+
+    async deleteConsumerGroup(groupId: string):
+        Promise<DeleteConsumerGroupResponse> {
+        const request: DeleteConsumerGroup = {
+            groupId: groupId,
+        };
+
+        const response = await fetch('./api/consumer-groups/del/' + encodeURIComponent(groupId), {
+            method: 'DELETE',
+            headers: [
+                ['Content-Type', 'application/json']
+            ],
+            body: toJson(request),
+        });
+
+        return await tryParseOrUnwrapError<DeleteConsumerGroupResponse>(response);
     },
 
 

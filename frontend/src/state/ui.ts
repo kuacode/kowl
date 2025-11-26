@@ -4,8 +4,6 @@ import { touch, clone } from "../utils/jsonUtils";
 import { DEFAULT_TABLE_PAGE_SIZE } from "../components/misc/common";
 import { TopicTabId } from "../components/pages/topics/Topic.Details";
 import { AclRequest, AclRequestDefault, EncodingType } from "./restInterfaces";
-import { TableSettings } from "../components/misc/KowlTable";
-import { ConnectTabKeys } from "../components/pages/connect/Overview";
 
 const settingsName = 'uiSettings-v3';
 
@@ -206,11 +204,6 @@ const uiSettings = observable({
 
     aclSearchParams: clone(AclRequestDefault) as AclRequest,
 
-    quotasList: {
-        pageSize: DEFAULT_TABLE_PAGE_SIZE,
-        quickSearch: '',
-    },
-
     schemaList: {
         pageSize: DEFAULT_TABLE_PAGE_SIZE,
         quickSearch: ''
@@ -218,37 +211,6 @@ const uiSettings = observable({
 
     schemaDetails: {
         viewMode: 'fields' as 'json' | 'fields',
-    },
-
-    kafkaConnect: {
-        selectedTab: 'clusters' as ConnectTabKeys,
-
-        clusters: {
-            pageSize: undefined as any as number,
-            quickSearch: ''
-        },
-        connectors: {
-            pageSize: undefined as any as number,
-            quickSearch: ''
-        },
-        tasks: {
-            pageSize: undefined as any as number,
-            quickSearch: ''
-        },
-
-        clusterDetails: {
-            pageSize: undefined as any as number,
-            quickSearch: ''
-        },
-        clusterDetailsPlugins: {
-            pageSize: undefined as any as number,
-            quickSearch: ''
-        },
-
-        connectorDetails: {
-            pageSize: undefined as any as number,
-            quickSearch: ''
-        }
     },
 
     userDefaults: {

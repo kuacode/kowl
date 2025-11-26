@@ -20,6 +20,9 @@ func (api *API) routes() *chi.Mux {
 	instrument := middleware.NewInstrument(api.Cfg.MetricsNamespace)
 	recoverer := middleware.Recoverer{Logger: api.Logger}
 	handleBasePath := createHandleBasePathMiddleware(api.Cfg.REST.BasePath, api.Cfg.REST.SetBasePathFromXForwardedPrefix, api.Cfg.REST.StripPrefix)
+
+	// 检查是否选择集群
+	baseRouter.Use(checkClusterSelected()) // only for debugging
 	baseRouter.Use(recoverer.Wrap,
 		chimiddleware.RealIP,
 		// requirePrefix(api.Cfg.REST.BasePath), // only for debugging
@@ -61,6 +64,8 @@ func (api *API) routes() *chi.Mux {
 
 			r.Route("/api", func(r chi.Router) {
 				// Cluster
+				r.Get("/cluster-change", api.handleClusterChange())
+				r.Get("/cluster-list", api.handleClusterListData())
 				r.Get("/api-versions", api.handleGetAPIVersions())
 				r.Get("/brokers/{brokerID}/config", api.handleBrokerConfig())
 				r.Get("/cluster", api.handleDescribeCluster())
@@ -87,6 +92,8 @@ func (api *API) routes() *chi.Mux {
 				r.Get("/consumer-groups/{groupId}", api.handleGetConsumerGroup())
 				r.Patch("/consumer-groups/{groupId}", api.handlePatchConsumerGroup())
 				r.Delete("/consumer-groups/{groupId}", api.handleDeleteConsumerGroupOffsets())
+				// 删除group
+				r.Delete("/consumer-groups/del/{groupId}", api.handleDeleteConsumerGroup())
 
 				// Bulk Operations
 				r.Get("/operations/topic-details", api.handleGetAllTopicDetails())
@@ -130,6 +137,12 @@ func (api *API) routes() *chi.Mux {
 				r.Get("/", handleIndex)
 				r.Get("/*", handleResources)
 			})
+
+			// fsfs, err := fs.Sub(front.FrontendFiles, "frontend")
+			// if err != nil {
+			// 	api.Logger.Fatal("failed to get sub filesystem for embedded frontend files", zap.Error(err))
+			// }
+			// router.Handle("/*", http.FileServerFS(fsfs))
 		} else {
 			api.Logger.Info("no static files will be served as serving the frontend has been disabled")
 		}

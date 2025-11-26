@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"fmt"
+
 	"github.com/twmb/franz-go/pkg/kmsg"
 )
 

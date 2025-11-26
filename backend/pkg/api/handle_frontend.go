@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -17,7 +16,7 @@ import (
 // createFrontendHandlers creates two handlers: one to handle the '/' route and one to handle any other route
 func (api *API) createFrontendHandlers(frontendDir string) (handleIndex http.HandlerFunc, handleFrontendResources http.HandlerFunc) {
 	indexPath := frontendDir + "/index.html"
-	indexOriginal, err := ioutil.ReadFile(indexPath)
+	indexOriginal, err := os.ReadFile(indexPath)
 	if err != nil {
 		api.Logger.Fatal("cannot load frontend index file", zap.String("directory", frontendDir), zap.Error(err))
 		return nil, nil
@@ -142,7 +141,7 @@ func hashFilesInDirectory(directory string) map[string]string {
 }
 
 func hashFile(filePath string) string {
-	fileData, err := ioutil.ReadFile(filePath)
+	fileData, err := os.ReadFile(filePath)
 	if err != nil {
 		panic(fmt.Errorf("Could read file to calculate sha256 for file '%v': %v", filePath, err))
 	}

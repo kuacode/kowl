@@ -11,6 +11,7 @@ import (
 
 // Config required for opening a connection to Kafka
 type Config struct {
+	Id string `yaml:"id"`
 	// General
 	Brokers        []string `yaml:"brokers"`
 	ClientID       string   `yaml:"clientId"`
