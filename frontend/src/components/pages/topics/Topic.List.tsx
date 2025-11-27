@@ -1,8 +1,8 @@
 import React from 'react';
 import { TrashIcon } from '@heroicons/react/outline';
-import { Alert, Button, Checkbox, Col, Modal, notification, Popover, Row, Statistic, Table, Tooltip } from 'antd';
+import { Alert, Button, Input, Modal, notification, Popover, Row, Statistic, Tooltip } from 'antd';
 import { motion } from 'framer-motion';
-import { autorun, computed, IReactionDisposer, makeObservable, observable } from 'mobx';
+import { autorun, IReactionDisposer, makeObservable, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { appGlobal } from '../../../state/appGlobal';
 import { api } from '../../../state/backendApi';
@@ -14,7 +14,6 @@ import { DefaultSkeleton, findPopupContainer, QuickTable } from '../../../utils/
 import Card from '../../misc/Card';
 import { makePaginationConfig, renderLogDirSummary, sortField } from '../../misc/common';
 import { KowlTable } from '../../misc/KowlTable';
-import SearchBar from '../../misc/SearchBar';
 import { PageComponent, PageInitHelper } from '../Page';
 import { useState } from 'react';
 import { CheckIcon, CircleSlashIcon, EyeClosedIcon } from '@primer/octicons-react';
@@ -100,6 +99,13 @@ class TopicList extends PageComponent {
                 </Card>
 
                 <Card>
+                    <Input
+                        placeholder="搜索 Topic Name..."
+                        value={uiSettings.topicList.quickSearch}
+                        onChange={(e) => uiSettings.topicList.quickSearch = e.target.value}
+                        style={{ marginBottom: '16px' }}
+                        allowClear
+                    />
                     <KowlTable
                         dataSource={topics}
                         rowKey={(x) => x.topicName}
@@ -143,7 +149,7 @@ class TopicList extends PageComponent {
                         ]}
 
                         search={{
-                            searchColumnIndex: 0,
+                            // searchColumnIndex: 0,
                             isRowMatch: (row, regex) => {
                                 if (regex.test(row.topicName)) return true;
                                 if (regex.test(row.cleanupPolicy)) return true;
